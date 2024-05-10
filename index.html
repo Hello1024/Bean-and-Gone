@@ -31,6 +31,11 @@
 	mouse.src = 'images/mouse.png';
     const copy = new Image();
 	copy.src = 'images/copy.png';
+	const rustle = document.createElement('audio');
+    rustle.src = 'sounds/Rustle.m4a';
+    const lever = document.createElement('audio');
+    lever.src = 'sounds/Lever.m4a';
+
 
 	function image2Canvas(img) {
 	// Create a hidden canvas or image buffer
@@ -176,6 +181,8 @@ canvas.addEventListener('mousedown', function(e) {
 
 			// Draw the contents of the original canvas onto the new canvas
 			ctx.drawImage(left.labels[buttonnum], 0, 0);
+
+			lever.play();
 
 		}
   	}
