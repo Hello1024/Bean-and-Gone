@@ -174,6 +174,7 @@ noises2played = false;
 	setTimeout(go, 1000);
 
     function drawAll() {
+    	if (noises2played) return;
 	   	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	  // Draw the grid of images
