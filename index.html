@@ -31,8 +31,8 @@
 	mouse.src = 'images/mouse.png';
     const copy = new Image();
 	copy.src = 'images/copy.png';
-	const rustle = document.createElement('audio');
-    rustle.src = 'sound/Rustle.m4a';
+	const noises2 = document.createElement('audio');
+    noises2.src = 'sound/noises2.m4a';
     const lever = document.createElement('audio');
     lever.src = 'sound/Lever.m4a';
 
@@ -140,7 +140,7 @@
   }
   return shuffledArray;
 }
-
+noises2played = false;
     function go() {
     	var dividedlabels = [];
 
@@ -223,10 +223,16 @@
 
 	  // draw clock
 	  var period= Math.floor((new Date().getTime() - start_time)/1000/10);
-	  if (period>8) period=8;
+	  if (period>8) {
+	  	period=8;
+	  	if (!noises2played) {
+		  	noises2.play();
+		  	noises2played=true;
+		  }
+	  }
 	  ctx.drawImage(clocks[period], canvas.width-200, 500, 200, 300);
 
-
+      
 
 	};
 
