@@ -32,9 +32,9 @@
     const copy = new Image();
 	copy.src = 'images/copy.png';
 	const rustle = document.createElement('audio');
-    rustle.src = 'sounds/Rustle.m4a';
+    rustle.src = 'sound/Rustle.m4a';
     const lever = document.createElement('audio');
-    lever.src = 'sounds/Lever.m4a';
+    lever.src = 'sound/Lever.m4a';
 
     var clocks = []
     for (var i=0; i<9; i++) {
@@ -46,7 +46,7 @@
     var labels = []
     for (var i=0; i<9; i++) {
     	var tmpimg = new Image();
-		tmpimg.src = 'labels/'+ String.fromCharCode(97 + i);+'.png';
+		tmpimg.src = 'labels/'+ String.fromCharCode(97 + i)+'.jpg';
 		labels.push(tmpimg);
     }
 
@@ -73,11 +73,11 @@
 
 		// Array of 5 colors
 		const colors = [
-		  { r: 145, g: 136, b: 163 },   // Red
-		  { r: 173, g: 173, b: 163 },   // Green
-		  { r: 112, g: 155, b: 164 },   // Blue
-		  { r: 129, g: 148, b: 128 }, // Yellow
-		  { r: 166, g: 135, b: 132 }  // Magenta
+		  { r: 145, g: 136, b: 163 },   // top
+		  { r: 173, g: 173, b: 163 },   // 
+		  { r: 112, g: 155, b: 164 },   // 
+		  { r: 129, g: 148, b: 128 }, // 
+		  { r: 166, g: 135, b: 132 }  // bottom
 		];
 
 		// Create 5 output canvases
@@ -90,7 +90,7 @@
 		}
 
 		// Blur the image
-		const blurRadius = 5;
+		const blurRadius = 50;
 		ctx.filter = `blur(${blurRadius}px)`;
 		ctx.drawImage(canvas, 0, 0);
 
@@ -122,31 +122,49 @@
 		  const outputCtx = outputCanvases[closestColor].getContext('2d');
 		  const x = (i / 4) % canvas.width;
 		  const y = Math.floor((i / 4) / canvas.width);
-		  outputCtx.drawImage(canvas, x, y, 1, 1, x, y, 1, 1);
+		  outputCtx.drawImage(canimg, x, y, 1, 1, x, y, 1, 1);
 		}
 
-		// Display the output canvases
-		for (let i = 0; i < outputCanvases.length; i++) {
-		  document.body.appendChild(outputCanvases[i]);
-		}
+		return outputCanvases;
+		
     }
 	mousex = 300;
 	mousey = 300;
 	var start_time = new Date().getTime();
 
+	function shuffleArray(array) {
+  const shuffledArray = [...array];
+  for (let i = shuffledArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+  }
+  return shuffledArray;
+}
 
     function go() {
-    	//setupcans();
+    	var dividedlabels = [];
+
+    	for (var i=0; i<9; i++) {
+    		dividedlabels[i*2] = setupcan(labels[i]);
+    		var cpy = [];
+    		for (var j=0; j<5; j++)
+    			cpy[j] = image2Canvas(dividedlabels[i*2][j]);
+    	    dividedlabels[i*2+1] = cpy;
+        }
+        dividedlabels = shuffleArray(dividedlabels);
+
+
 		canstore = [];
 		for (let row = 0; row < gridHeight; row++) {
 		    for (let col = 0; col < gridWidth; col++) {
+
 		    	var can = {
 		    		'x': col * imageWidth,
 		    		'y': row * imageHeight,
 		    		'width': imageWidth * (0.8 + Math.random()*0.4),
 		    		'height': imageHeight * (0.8 + Math.random()*0.4),
 		    		'background': blank,
-		    		'labels': [image2Canvas(label), image2Canvas(blank), image2Canvas(blank), image2Canvas(blank), image2Canvas(blank)],
+		    		'labels': dividedlabels.pop(),
 
 		    	}
 		      	canstore.push(can);
@@ -168,7 +186,7 @@
 
 	    	if (mousex>can.x && mousex<can.x+can.width &&
 	    		mousey>can.y && mousey<can.y+can.height &&
-	    		Math.random() < 0.05) {
+	    		Math.random() < 0.01) {
 
 	    		var ctx2 = thelabel.getContext('2d');
 
@@ -186,7 +204,7 @@
 				ctx2.fill();
 
 	    	}
-           	ctx.drawImage(thelabel, can.x, can.y, can.width, can.height);
+           	ctx.drawImage(thelabel, can.x+can.width*0.25, can.y+can.height*0.35, can.width*0.5, can.height*0.5);
 	    }
 	  
 	  }
@@ -254,7 +272,7 @@ canvas.addEventListener('mousedown', function(e) {
 
   // Check if a mouse click is on a copy button
   if (Math.abs(mouseY-51)<25) {
-  	var buttonnum = Math.round((mouseX-1187)/(1187-1514) * 5);
+  	var buttonnum = Math.round((mouseX-1187)/(1514-1187) * 5);
   	if (buttonnum>=0 && buttonnum<5) {
 
   		var left = findCanNear(1256, 356);
