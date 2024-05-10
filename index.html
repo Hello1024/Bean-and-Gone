@@ -37,13 +37,18 @@
     lever.src = 'sounds/Lever.m4a';
 
     var clocks = []
-
     for (var i=0; i<9; i++) {
     	var tmpimg = new Image();
 		tmpimg.src = 'clock/'+i+'.jpg';
 		clocks.push(tmpimg);
     }
 
+    var labels = []
+    for (var i=0; i<9; i++) {
+    	var tmpimg = new Image();
+		tmpimg.src = 'labels/'+ String.fromCharCode(97 + i);+'.png';
+		labels.push(tmpimg);
+    }
 
 	function image2Canvas(img) {
 	// Create a hidden canvas or image buffer
@@ -61,12 +66,77 @@
 	    
 	}
 
+    function setupcan(canimg) {
+    	// Assuming you have a canvas element with id "canvas" and the image is loaded onto it
+		const canvas = image2Canvas(canimg);
+		const ctx = canvas.getContext('2d');
+
+		// Array of 5 colors
+		const colors = [
+		  { r: 145, g: 136, b: 163 },   // Red
+		  { r: 173, g: 173, b: 163 },   // Green
+		  { r: 112, g: 155, b: 164 },   // Blue
+		  { r: 129, g: 148, b: 128 }, // Yellow
+		  { r: 166, g: 135, b: 132 }  // Magenta
+		];
+
+		// Create 5 output canvases
+		const outputCanvases = [];
+		for (let i = 0; i < 5; i++) {
+		  const outputCanvas = document.createElement('canvas');
+		  outputCanvas.width = canvas.width;
+		  outputCanvas.height = canvas.height;
+		  outputCanvases.push(outputCanvas);
+		}
+
+		// Blur the image
+		const blurRadius = 5;
+		ctx.filter = `blur(${blurRadius}px)`;
+		ctx.drawImage(canvas, 0, 0);
+
+		// Get the image data
+		const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+		const data = imageData.data;
+
+		// Iterate over each pixel
+		for (let i = 0; i < data.length; i += 4) {
+		  const r = data[i];
+		  const g = data[i + 1];
+		  const b = data[i + 2];
+
+		  // Find the closest color
+		  let closestColor = 0;
+		  let minDistance = Infinity;
+		  for (let j = 0; j < colors.length; j++) {
+		    const dr = r - colors[j].r;
+		    const dg = g - colors[j].g;
+		    const db = b - colors[j].b;
+		    const distance = Math.sqrt(dr * dr + dg * dg + db * db);
+		    if (distance < minDistance) {
+		      minDistance = distance;
+		      closestColor = j;
+		    }
+		  }
+
+		  // Copy the pixel to the corresponding output canvas
+		  const outputCtx = outputCanvases[closestColor].getContext('2d');
+		  const x = (i / 4) % canvas.width;
+		  const y = Math.floor((i / 4) / canvas.width);
+		  outputCtx.drawImage(canvas, x, y, 1, 1, x, y, 1, 1);
+		}
+
+		// Display the output canvases
+		for (let i = 0; i < outputCanvases.length; i++) {
+		  document.body.appendChild(outputCanvases[i]);
+		}
+    }
 	mousex = 300;
 	mousey = 300;
 	var start_time = new Date().getTime();
 
 
     function go() {
+    	//setupcans();
 		canstore = [];
 		for (let row = 0; row < gridHeight; row++) {
 		    for (let col = 0; col < gridWidth; col++) {
@@ -98,7 +168,7 @@
 
 	    	if (mousex>can.x && mousex<can.x+can.width &&
 	    		mousey>can.y && mousey<can.y+can.height &&
-	    		Math.random() < 0.1) {
+	    		Math.random() < 0.05) {
 
 	    		var ctx2 = thelabel.getContext('2d');
 
