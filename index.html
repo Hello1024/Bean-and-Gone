@@ -1,0 +1,209 @@
+<html>
+<head>
+	<title>Bean and Gone</title>
+</head>
+<body>
+	<canvas id=store></canvas>
+</body>
+<script type="text/javascript">
+	// Get the canvas element
+	const canvas = document.getElementById('store');
+	const ctx = canvas.getContext('2d');
+
+	// Set the canvas dimensions
+	canvas.width = 1700;
+	canvas.height = 800;
+
+	// Set the grid dimensions
+	const gridWidth = 4;
+	const gridHeight = 3;
+
+	// Set the image dimensions
+	const imageWidth = (canvas.width -600) / gridWidth;
+	const imageHeight = canvas.height / gridHeight;
+
+	const blank = new Image();
+	blank.src = 'images/blank2.png';
+    const label = new Image();
+	label.src = 'images/label.png';
+
+	const mouse = new Image();
+	mouse.src = 'images/mouse.png';
+    const copy = new Image();
+	copy.src = 'images/copy.png';
+
+	function image2Canvas(img) {
+	// Create a hidden canvas or image buffer
+    const hiddenCanvas = document.createElement('canvas');
+    const hiddenCtx = hiddenCanvas.getContext('2d');
+
+      // Set the dimensions of the hidden canvas to match the image
+      hiddenCanvas.width = img.width;
+      hiddenCanvas.height = img.height;
+
+      // Draw the image onto the hidden canvas
+      hiddenCtx.drawImage(img, 0, 0);
+
+      return hiddenCanvas;
+	    
+	}
+
+	mousex = 300;
+	mousey = 300;
+
+    function go() {
+		canstore = [];
+		for (let row = 0; row < gridHeight; row++) {
+		    for (let col = 0; col < gridWidth; col++) {
+		    	var can = {
+		    		'x': col * imageWidth,
+		    		'y': row * imageHeight,
+		    		'width': imageWidth * (0.8 + Math.random()*0.4),
+		    		'height': imageHeight * (0.8 + Math.random()*0.4),
+		    		'background': blank,
+		    		'labels': [image2Canvas(label), image2Canvas(blank), image2Canvas(blank), image2Canvas(blank), image2Canvas(blank)],
+
+		    	}
+		      	canstore.push(can);
+		    }
+		  }
+	}
+	setTimeout(go, 1000);
+
+    function drawAll() {
+	   	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	  // Draw the grid of images
+	  for (cannum in canstore) {
+	  	var can = canstore[cannum];
+	    ctx.drawImage(can.background, can.x, can.y, can.width, can.height);
+
+	    for (labelnum in can.labels) {
+	    	var thelabel = can.labels[labelnum];
+
+	    	if (mousex>can.x && mousex<can.x+can.width &&
+	    		mousey>can.y && mousey<can.y+can.height &&
+	    		Math.random() < 0.1) {
+
+	    		var ctx2 = thelabel.getContext('2d');
+
+	    		ctx2.globalCompositeOperation = 'destination-out';
+
+				// Set the fill style to fully transparent
+				ctx2.fillStyle = 'rgba(0, 0, 0, 1)';
+
+				// Draw a transparent circle
+				const centerX = thelabel.width*Math.random();
+				const centerY = thelabel.height*Math.random();
+				const radius = 100*Math.random();
+				ctx2.beginPath();
+				ctx2.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+				ctx2.fill();
+
+	    	}
+           	ctx.drawImage(thelabel, can.x, can.y, can.width, can.height);
+	    }
+	  
+	  }
+
+	  mousex += (Math.random()-0.5)*150;
+	  mousey += (Math.random()-0.5)*150;
+
+      mousex = Math.max(Math.min(mousex, canvas.width-100),0);
+      mousey = Math.max(Math.min(mousey, canvas.height-100),0);
+
+	  // draw mouse
+	  ctx.drawImage(mouse, mousex, mousey, 100, 100);
+
+      // draw copy
+	  ctx.drawImage(copy, canvas.width-600, 0, 600, 600);
+
+	};
+
+	setInterval(drawAll, 50);
+    
+
+
+
+    // Variables to store the image position and dragging state
+let imageX = 0;
+let imageY = 0;
+let isDragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+function findCanNear(x,y) {
+	for (cannum in canstore) {
+	  	var can = canstore[cannum];
+
+	  	if (Math.abs(can.x+can.width/2-x) + Math.abs(can.y+can.height/2-y) < 100)
+	  		return can;
+
+	}
+	return null;
+}
+  		
+
+// Event listener for mouse down event
+canvas.addEventListener('mousedown', function(e) {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+
+  // Check if the mouse click is inside the image
+  for (can in canstore) {
+  	if (mouseX >= canstore[can].x && mouseX <= canstore[can].x + imageWidth &&
+      mouseY >= canstore[can].y && mouseY <= canstore[can].y + imageHeight) {
+    isDragging = canstore[can];
+    offsetX = mouseX - canstore[can].x;
+    offsetY = mouseY - canstore[can].y;
+	}
+  }
+
+  // Check if a mouse click is on a copy button
+  if (Math.abs(mouseY-51)<25) {
+  	var buttonnum = Math.round((mouseX-1187)/(1187-1514) * 5);
+  	if (buttonnum>=0 && buttonnum<5) {
+
+  		var left = findCanNear(1256, 356);
+  		var right = findCanNear(1495, 356);
+
+  		if (left && right) {
+
+	  		// Get the 2D rendering context of the new canvas
+			const ctx = right.labels[buttonnum].getContext('2d');
+			ctx.globalCompositeOperation = 'source-over';
+
+			// Draw the contents of the original canvas onto the new canvas
+			ctx.drawImage(left.labels[buttonnum], 0, 0);
+
+		}
+  	}
+  }
+  
+  console.log(mouseX, mouseY);
+
+});
+
+// Event listener for mouse move event
+canvas.addEventListener('mousemove', function(e) {
+  if (isDragging) {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    // Update the image position based on the mouse movement
+    isDragging.x = mouseX - offsetX;
+    isDragging.y = mouseY - offsetY;
+
+    // Redraw the image on the canvas
+    drawAll();
+  }
+});
+
+// Event listener for mouse up event
+canvas.addEventListener('mouseup', function(e) {
+  isDragging = null;
+});
+</script>
+</html>
