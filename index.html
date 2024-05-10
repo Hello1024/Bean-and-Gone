@@ -36,6 +36,14 @@
     const lever = document.createElement('audio');
     lever.src = 'sounds/Lever.m4a';
 
+    var clocks = []
+
+    for (var i=0; i<9; i++) {
+    	var tmpimg = new Image();
+		tmpimg.src = 'clock/'+i+'.jpg';
+		clocks.push(tmpimg);
+    }
+
 
 	function image2Canvas(img) {
 	// Create a hidden canvas or image buffer
@@ -55,6 +63,8 @@
 
 	mousex = 300;
 	mousey = 300;
+	var start_time = new Date().getTime();
+
 
     function go() {
 		canstore = [];
@@ -100,7 +110,7 @@
 				// Draw a transparent circle
 				const centerX = thelabel.width*Math.random();
 				const centerY = thelabel.height*Math.random();
-				const radius = 100*Math.random();
+				const radius = 300*Math.pow(Math.random(),2);
 				ctx2.beginPath();
 				ctx2.arc(centerX, centerY, radius, 0, 2 * Math.PI);
 				ctx2.fill();
@@ -122,6 +132,13 @@
 
       // draw copy
 	  ctx.drawImage(copy, canvas.width-600, 0, 600, 600);
+
+	  // draw clock
+	  var period= Math.floor((new Date().getTime() - start_time)/1000/10);
+	  if (period>8) period=8;
+	  ctx.drawImage(clocks[period], canvas.width-200, 500, 200, 300);
+
+
 
 	};
 
